@@ -25,11 +25,14 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 
 Close and reopen your terminal or run source ~/.bashrc 
 - Check list all the node version
+  
 nvm list-remote
 
-- Install the any node version 
+- Install the any node version
+  
 nvm install 14.17.0
 
-- Select that version to use 
+- Select that version to use
+
 nvm use X.XX.X
 
