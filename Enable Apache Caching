@@ -1,0 +1,96 @@
+Apache cache states
+Apache's HTTP caching system considers its content as being in one of three states:
+
+Fresh: New content which can be served up without being checked.
+Stale: Content which has expired according to the rules you set, and which needs to be checked for a fresh copy.
+Non-Existent: Content which is missing.
+When Apache receives a request, it checks the Time To Live (TTL) timestamp. If the TTL has expired, Apache will re-check that content to see if an updated version is available.
+
+If an updated version is available: Apache will fetch that content and store it until the new TTL expires.
+If the existing version has not been updated: Apache will update the TTL on the file and continue to serve it until the TTL expires.
+Apache uses the mod_cache module to evaluate the TTL on content, and determine what to do when it receives a request. It uses the mod_cache_disk module to store the data on the disk.
+
+Apache cache placement
+Before configuring HTTP caching, you will need to decide whether to place the cache: either in front or behind the web server.
+
+CacheQuickHandler is the setting which determines where the cache will be placed.
+
+Cache in front of web server
+If CacheQuickHandler is set to On, the cache will be checked before consulting Apache.
+
+This is a very fast way to serve content, because requests do not have to wait for Apache to finish the request. However this is not secure. Because all of the website content is put in front of the web server, no authentication happens.
+
+This means that if you have content which requires users to log in or authenticate, that content will be available to anyone who requests it.
+
+When configuring Apache HTTP caching, please note that CacheQuickHandler is turned on by default. If this will cause a security issue for your site, you will need to be sure to turn it Off.
+
+Cache behind web server
+If CacheQuickHandler is set to Off, the request will go through Apache before being fetched from the cache.
+
+This method is not as fast as putting the cache in front of the web server, because requests have to be processed through Apache. However, it allows for authentication, and is therefore best for any content where the user has to log in or authenticate before accessing content.
+
+For this tutorial, we will be setting CacheQuickHandler to Off.
+
+# Enable the Apache modules
+To set up HTTP caching, first install the apache2-utils package:
+
+sudo apt-get update
+sudo apt-get install apache2-utils
+
+# Enable the necessary Apache modules:
+
+sudo a2enmod cache
+sudo a2enmod cache_disk
+sudo a2enmod expires
+sudo a2enmod headers
+
+#Then restart Apache for the changes to take effect:
+
+sudo systemctl restart apache2
+
+# Add the virtual host configurations
+The following configuration is given as an example. It is a good starting place for a basic HTTP cache placed behind the web server, where content is set to expire 5 minutes after the last time it was accessed.
+
+There are many configurations you can add and change. A full list is available on the Apache website.
+
+Apache caching is best configured on a domain-by-domain basis. Open the Apache configuration file for the domain with the command:
+
+sudo nano /etc/apache2/sites-available/000-default.conf
+
+# Scroll to the bottom of the file and add the following lines above the line which reads </VirtualHost>:
+
+CacheQuickHandler off
+CacheLock on
+CacheLockPath /tmp/mod_cache-lock
+CacheLockMaxAge 5
+CacheIgnoreHeaders Set-Cookie
+<Location />
+    CacheEnable disk
+    CacheHeader on
+    CacheDefaultExpire 800
+    CacheMaxExpire 64000
+    CacheIgnoreNoLastMod On
+    ExpiresActive on
+    ExpiresDefault A300
+</Location>
+Save and exit the file. Then check for configuration errors with the command:
+
+sudo apachectl configtest
+If there are no errors present in the file, restart Apache for the changes to take effect:
+
+sudo systemctl restart apache2
+Test the HTTP cache
+To verify that the caching system is working, check the directory where the cache is being stored. For example, first list the contents of the cache directory:
+
+ls -la /var/cache/apache2/mod_cache_disk/
+If there is very little traffic to your server, and you have just set up the caching, you will probably only see a few items:
+
+user@localhost:/var/www/html# ls -la /var/cache/apache2/mod_cache_disk/
+total 20    
+drwxr-xr-x 5 www-data www-data 4096 Feb  1 21:43 .
+drwxr-xr-x 3 root     root     4096 Jan  6 03:20 ..
+drwx------ 3 www-data www-data 4096 Feb  1 21:42 2
+drwx------ 3 www-data www-data 4096 Feb  1 21:42 T
+Browse around your website, then check the directory again:
+
+user@localhost:/var/www/html# ls -la /var/cache/apache2/mod_cache_disk/
