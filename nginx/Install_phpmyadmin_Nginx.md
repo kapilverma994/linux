@@ -13,11 +13,12 @@ sudo apt install phpmyadmin php-mbstring php-zip php-gd php-json php-curl
 - php-curl: Allows PHP to communicate with other servers
 ```
 - Create a symbolic link from the installation files to Nginx’s document root directory:
+```
 sudo ln -s /usr/share/phpmyadmin /var/www/codesagar.com/phpmyadmin
 
-
-NGINX Configurations:
-
+```
+- NGINX Configurations:
+```
 location /phpmyadmin {
     root /var/www/codesagar.com;
     index index.php index.html index.htm;
@@ -39,12 +40,13 @@ location /phpmyadmin {
 - Check Permissions:
 sudo chown -R www-data:www-data /var/www/your_domain/phpmyadmin
 sudo chmod -R 755 /var/www/your_domain/phpmyadmin
-
+```
 
 - Restart the nginx and PHP-FPM services:
+```  
 sudo systemctl restart nginx
 sudo systemctl restart php78.1-fpm
-
+```
 ```
 - Login to phpmyadmin using web browser
 - If get warning e.g. "The $cfg['TempDir'] (/var/lib/phpmyadmin/tmp/) is not accessible." then run below commands
