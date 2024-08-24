@@ -29,6 +29,7 @@ ls
 ```sh
 Syntax:- unzip zip_file_name
 Example:- unzip osmsProject.zip
+in a folder :- unzip access.zip -d access
 ```
 #
 #
